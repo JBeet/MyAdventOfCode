@@ -1,12 +1,14 @@
-import utils.readInput
+package aoc2024
+
+import utils.read2024
 import utils.verify
 
 fun main() {
-    val testInput = readInput("Day04_test")
+    val testInput = read2024("Day04_test")
     val day04test = Day04(testInput)
     verify(18L, day04test.part1())
 
-    val input = readInput("Day04")
+    val input = read2024("Day04")
     val day04 = Day04(input)
     println(day04.part1())
 

@@ -1,9 +1,11 @@
+package aoc2024
+
 import utils.*
 
 fun main() {
-    val testInput = readInput("Day05_test")
+    val testInput = read2024("Day05_test")
     verify(143, Day05(testInput).part1())
-    val input = readInput("Day05")
+    val input = read2024("Day05")
     println(Day05(input).part1())
     verify(123, Day05(testInput).part2())
     println(Day05(input).part2())

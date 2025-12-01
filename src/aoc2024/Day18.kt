@@ -1,11 +1,13 @@
+package aoc2024
+
 import utils.*
 import kotlin.time.measureTime
 
 fun main() {
-    val testInput = readInput("Day18_test")
+    val testInput = read2024("Day18_test")
     verify(22, Day18.part1(testInput, 12, 7))
     println("Test input OK")
-    val input = readInput("Day18")
+    val input = read2024("Day18")
     println(Day18.part1(input, 1024, 71))
     verify("6,1", Day18.part2(testInput, 7))
     println("Test input OK")

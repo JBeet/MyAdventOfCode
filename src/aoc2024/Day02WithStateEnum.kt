@@ -1,14 +1,16 @@
+package aoc2024
+
 import utils.AnsiColor
 import utils.intLists
-import utils.readInput
+import utils.read2024
 import kotlin.time.measureTime
 
 fun main() {
-    val testInput = readInput("Day02_test")
+    val testInput = read2024("Day02_test")
     check(Day02WithStateEnum.part1(testInput) == 2) { "Expected 2 but was " + Day02WithStateEnum.part1(testInput) }
     check(Day02WithStateEnum.part2(testInput) == 4) { "Expected 4 but was " + Day02WithStateEnum.part2(testInput) }
 
-    val input = readInput("Day02")
+    val input = read2024("Day02")
     Day02WithStateEnum.showStates(input)
     println()
     println("Solution Part 1: " + Day02WithStateEnum.part1(input))

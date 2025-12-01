@@ -1,11 +1,13 @@
+package aoc2024
+
 import utils.intLists
-import utils.readInput
+import utils.read2024
 import kotlin.math.absoluteValue
 
 fun main() {
-    val testInput = readInput("Day02_test")
+    val testInput = read2024("Day02_test")
     check(Day02.part1(testInput) == 2) { "Expected 2 but was " + Day02.part1(testInput) }
-    val input = readInput("Day02")
+    val input = read2024("Day02")
     println(Day02.part1(input))
     check(Day02.part2(testInput) == 4) { "Expected 4 but was " + Day02.part2(testInput) }
     println(Day02.part2(input))

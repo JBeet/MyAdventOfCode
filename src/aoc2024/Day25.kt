@@ -1,13 +1,15 @@
+package aoc2024
+
 import utils.CharGrid
 import utils.paragraphs
-import utils.readInput
+import utils.read2024
 import utils.verify
 
 fun main() {
-    val testInput = readInput("Day25_test")
+    val testInput = read2024("Day25_test")
     verify(3, Day25.part1(testInput))
     println("Test input OK")
-    val input = readInput("Day25")
+    val input = read2024("Day25")
     println(Day25.part1(input))
 }
 

@@ -1,5 +1,7 @@
+package aoc2024
+
 import utils.intLists
-import utils.readInput
+import utils.read2024
 import kotlin.math.absoluteValue
 
 fun main() {
@@ -18,11 +20,11 @@ fun main() {
     }
 
     // Or read a large test input from the `src/Day01_test.txt` file:
-    val testInput = readInput("Day01_test")
+    val testInput = read2024("Day01_test")
     check(part1(testInput) == 11)
 
     // Read the input from the `src/Day01.txt` file.
-    val input = readInput("Day01")
+    val input = read2024("Day01")
     println(part1(input))
     check(part2(testInput) == 31L)
     println(part2(input))

@@ -1,13 +1,14 @@
-import Day24.Wire.*
+package aoc2024
+
 import utils.paragraphs
-import utils.readInput
+import utils.read2024
 import utils.verify
 
 fun main() {
-    val testInput = readInput("Day24_test")
+    val testInput = read2024("Day24_test")
     verify(2024, Day24.part1(testInput))
     println("Test input OK")
-    val input = readInput("Day24")
+    val input = read2024("Day24")
     println(Day24.part1(input))
     println(Day24.part2(input))
 
@@ -34,17 +35,17 @@ object Day24 {
         }
     }
 
-    private fun Input(name: String): Input = when {
-        name.startsWith("x") -> Input("x", name.drop(1).toInt(), name)
-        name.startsWith("y") -> Input("y", name.drop(1).toInt(), name)
+    private fun Input(name: String): Day24.Wire.Input = when {
+        name.startsWith("x") -> Day24.Wire.Input("x", name.drop(1).toInt(), name)
+        name.startsWith("y") -> Day24.Wire.Input("y", name.drop(1).toInt(), name)
         else -> error("Not an input wire: $name")
     }
 
     private fun Wire(name: String): Wire = when {
-        name.startsWith("x") -> Input("x", name.drop(1).toInt(), name)
-        name.startsWith("y") -> Input("y", name.drop(1).toInt(), name)
-        name.startsWith("z") -> ZOutput(name.drop(1).toInt(), name)
-        else -> Other(name)
+        name.startsWith("x") -> Day24.Wire.Input("x", name.drop(1).toInt(), name)
+        name.startsWith("y") -> Day24.Wire.Input("y", name.drop(1).toInt(), name)
+        name.startsWith("z") -> Day24.Wire.ZOutput(name.drop(1).toInt(), name)
+        else -> Day24.Wire.Other(name)
     }
 
     enum class GateType {
@@ -53,9 +54,9 @@ object Day24 {
 
     data class Gate(val inp1: Wire, val type: GateType, val inp2: Wire, val out: Wire)
 
-    data class Circuit(val inputs: Map<Input, Boolean>, val gates: List<Gate>) {
+    data class Circuit(val inputs: Map<Day24.Wire.Input, Boolean>, val gates: List<Gate>) {
         private val indexedByOutput = gates.associateBy { it.out }
-        private val outputGates = indexedByOutput.keys.filterIsInstance<ZOutput>().sorted()
+        private val outputGates = indexedByOutput.keys.filterIsInstance<Day24.Wire.ZOutput>().sorted()
         private val wireValues = inputs.toMutableMap<Wire, Boolean>()
         private val indexedByInput by lazy {
             val indexedByInput1 = gates.groupBy { it.inp1 }
@@ -91,7 +92,7 @@ object Day24 {
         }).takeUnless { it.hasCycle(wire1) || it.hasCycle(wire2) }
 
         private fun hasCycle(wire: Wire, wires: Set<Wire> = emptySet()): Boolean {
-            if (wire is Input) return false
+            if (wire is Day24.Wire.Input) return false
             if (wire in wires) return true
             val gate = indexedByOutput[wire] ?: return true
             val newWires = wires + wire
@@ -109,7 +110,7 @@ object Day24 {
             val toFix = problems.first()
             val optionsA = inputs.keys.asSequence().filter { it.index == toFix }
                 .flatMap { outputsReachableFrom(it) }
-                .filter { it !is Input && it !in knownSwaps }.distinct()
+                .filter { it !is Day24.Wire.Input && it !in knownSwaps }.distinct()
             val optionsB = gates.map { it.out }.filter { it !in knownSwaps }
             return optionsA.flatMap { optionA ->
                 optionsB.filter { optionB -> optionB != optionsA }.mapNotNull { oB ->
@@ -146,7 +147,7 @@ object Day24 {
             return xPlus1.outputMatches(maxIndex) { index -> index == maxIndex }
         }
 
-        private fun withInput(valueSelector: (Input) -> Boolean) =
+        private fun withInput(valueSelector: (Day24.Wire.Input) -> Boolean) =
             copy(inputs = inputs.keys.associateWith(valueSelector))
 
         private fun outputMatches(maxIndex: Int, test: (index: Int) -> Boolean) =
