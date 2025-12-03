@@ -11,6 +11,16 @@ import kotlin.io.path.readText
 fun read2024(name: String) = Path("src/aoc2024/$name.txt").readText().trim()
 fun read2025(name: String) = Path("src/aoc2025/$name.txt").readText().trim()
 
+class Cache<K, V>(val calculate: Cache<K, V>.(K) -> V, val items: MutableMap<K, V> = mutableMapOf()) :
+    Map<K, V> by items {
+    operator fun invoke(key: K): V = get(key)
+    override operator fun get(key: K): V = items.getOrPut(key) { calculate(key) }
+}
+
+fun <K, V> cached(block: Cache<K, V>.(K) -> V): Cache<K, V> = Cache(block)
+fun <K1, K2, V> cached2(block: Cache<Pair<K1, K2>, V>.(K1, K2) -> V): Cache<Pair<K1, K2>, V> =
+    cached { (k, v) -> block(k, v) }
+
 /**
  * Converts string to md5 hash.
  */
