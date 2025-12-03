@@ -13,7 +13,7 @@ fun main() {
         .sortedBy { it.first }
     val validation = ranges.flatten()
         .associateWith { it.toString() }
-        .mapValues { (_, s) -> counts.getValue(s.length).filter { s.isRepeating(s.length / it) } }
+        .mapValues { (_, s) -> counts(s.length).filter { s.isRepeating(s.length / it) } }
     val part1 = validation.filterValues { 2 in it }.keys.sum()
     val part2 = validation.filterValues { it.isNotEmpty() }.keys.sum()
     println(part1)

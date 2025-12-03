@@ -19,16 +19,17 @@ class Day03 {
         println(part2(input))
     }
 
-    fun part1(input: String): Long = input.lines().sumOf { bank -> parseBank(bank).maxOutput(2) }
-    fun part2(input: String) = input.lines().sumOf { bank -> parseBank(bank).maxOutput(12) }
-    fun parseBank(s: String): Bank = Bank(s.toCharArray().map { it.digitToInt() })
+    fun part1(input: String): Long = input.lines().sumOf { bank -> Bank(bank).maxOutput(2) }
+    fun part2(input: String) = input.lines().sumOf { bank -> Bank(bank).maxOutput(12) }
     data class Bank(val digits: List<Int>) {
-        fun maxOutput(outputSize: Int): Long = maxOutput(outputSize to digits.size)
+        constructor(s: String) : this(s.toCharArray().map { it.digitToInt() })
+
+        fun maxOutput(outputSize: Int): Long = maxOutput(outputSize, digits.size)
         val maxOutput = cached2 { outputSize: Int, inputSize: Int ->
             when {
-                outputSize > inputSize -> -1L
+                inputSize < outputSize -> -1L
                 outputSize == 0 -> 0L
-                else -> (0..<inputSize).maxOf { idx -> this((outputSize - 1) to idx) * 10 + digits[idx] }
+                else -> (0..<inputSize).maxOf { idx -> this(outputSize - 1, idx) * 10 + digits[idx] }
             }
         }
     }
