@@ -19,7 +19,7 @@ fun <E> List<List<E>>.with(position: Position, value: E): List<List<E>> {
     return result
 }
 
-fun <E> List<E>.with(position: Int, value: E): List<E>  {
+fun <E> List<E>.with(position: Int, value: E): List<E> {
     val result = mutableListOf<E>()
     result.addAll(subList(0, position))
     result.add(value)
@@ -59,7 +59,7 @@ open class FilledGrid<C>(
         }
 
     override fun row(r: Int): GridLine<C> =
-        if (bounds.hasRow(r)) GridList(r, cells[r], empty) else EmptyLine(r, empty)
+        if (bounds.hasRow(r)) GridList(this, r, cells[r], empty) else EmptyLine(r, empty)
 
     override fun column(c: Int) = if (bounds.hasColumn(c)) ColumnGridLine(c) else EmptyLine(c, empty)
 
@@ -72,13 +72,13 @@ open class FilledGrid<C>(
         override val index: Int = columnIndex
         override val isEmpty: Boolean by lazy { rowRange.all { cell(it) == empty } }
         override fun cell(idx: Int): C = if (idx in rowRange) cells[idx][columnIndex] else empty
-        override fun findAll(predicate: (C) -> Boolean): Map<Int, C> = rowRange.mapNotNull { row ->
+        override fun findAll(predicate: Grid<C>.(C) -> Boolean): Map<Int, C> = rowRange.mapNotNull { row ->
             val cell = cells[row][columnIndex]
             if (predicate(cell)) (row to cell) else null
         }.toMap()
     }
 
-    override fun findAll(predicate: (C) -> Boolean): Map<Position, C> = buildMap {
+    override fun findAll(predicate: Grid<C>.(C) -> Boolean): Map<Position, C> = buildMap {
         cells.forEachIndexed { rowIndex, rowData ->
             rowData.forEachIndexed { colIndex, cell ->
                 if (predicate(cell)) put(Position(rowIndex, colIndex), cell)
@@ -86,8 +86,11 @@ open class FilledGrid<C>(
         }
     }
 
-    override fun forEachNonEmpty(action: (Position) -> Unit) = forEachWithEmpty { if (cell(it) != empty) action(it) }
-    override fun countNonEmpty(predicate: (Position) -> Boolean) = countWithEmpty { cell(it) != empty && predicate(it) }
+    override fun forEachNonEmpty(action: Grid<C>.(Position) -> Unit) =
+        forEachWithEmpty { if (cell(it) != empty) action(it) }
+
+    override fun countNonEmpty(predicate: Grid<C>.(Position) -> Boolean) =
+        countWithEmpty { cell(it) != empty && predicate(it) }
 
     override fun transpose() = FilledGrid(cells.transpose(), empty)
     open fun rotate90() = FilledGrid(rotateCells90(), empty, bounds.swap())
@@ -112,14 +115,18 @@ open class FilledGrid<C>(
     }
 }
 
-private data class GridList<C>(override val index: Int, private val cells: List<C>, private val empty: C) :
-    GridLine<C> {
+private data class GridList<C>(
+    private val grid: Grid<C>,
+    override val index: Int,
+    private val cells: List<C>,
+    private val empty: C
+) : GridLine<C> {
     private val size: Int = cells.size
     private val columnRange = 0..<size
     override val isEmpty: Boolean get() = cells.all { it == empty }
     override fun cell(idx: Int): C = if (idx in columnRange) cells[idx] else empty
-    override fun findAll(predicate: (C) -> Boolean): Map<Int, C> = cells.mapIndexedNotNull { idx, cell ->
-        if (predicate(cell)) (idx to cell) else null
+    override fun findAll(predicate: Grid<C>.(C) -> Boolean): Map<Int, C> = cells.mapIndexedNotNull { idx, cell ->
+        if (grid.predicate(cell)) (idx to cell) else null
     }.toMap()
 
     override fun toString(): String = cells.joinToString("")

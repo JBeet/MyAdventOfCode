@@ -57,17 +57,18 @@ open class OpenGrid<C>(
     }
 
     override fun row(r: Int): GridLine<C> =
-        if (bounds.hasRow(r)) OpenGridLine(r, cellsByRow[r] ?: emptyMap(), empty) else EmptyLine(r, empty)
+        if (bounds.hasRow(r)) OpenGridLine(this, r, cellsByRow[r] ?: emptyMap(), empty) else EmptyLine(r, empty)
 
     override fun column(c: Int) =
-        if (bounds.hasColumn(c)) OpenGridLine(c, cellsByColumn[c] ?: emptyMap(), empty) else EmptyLine(c, empty)
+        if (bounds.hasColumn(c)) OpenGridLine(this, c, cellsByColumn[c] ?: emptyMap(), empty) else EmptyLine(c, empty)
 
     override fun cell(p: Position) = cells[p] ?: empty
     override fun cell(r: Int, c: Int) = cell(Position(r, c))
-    override fun findAll(predicate: (C) -> Boolean): Map<Position, C> = cells.filterValues(predicate)
+    override fun findAll(predicate: Grid<C>.(C) -> Boolean): Map<Position, C> = cells.filterValues { predicate(it) }
 
-    override fun forEachNonEmpty(action: (Position) -> Unit) = cells.forEach { (pos, _) -> action(pos) }
-    override fun countNonEmpty(predicate: (Position) -> Boolean): Int = cells.count { (pos, _) -> predicate(pos) }
+    override fun forEachNonEmpty(action: Grid<C>.(Position) -> Unit) = cells.forEach { (pos, _) -> action(pos) }
+    override fun countNonEmpty(predicate: Grid<C>.(Position) -> Boolean): Int =
+        cells.count { (pos, _) -> predicate(pos) }
 
     override fun transpose() = OpenGrid(transposeCells(), empty)
     fun transposeCells(): Map<Position, C> = cells.mapKeys { (pos, _) -> pos.transpose() }
@@ -88,9 +89,10 @@ open class OpenGrid<C>(
     }
 }
 
-private data class OpenGridLine<C>(override val index: Int, private val cells: Map<Int, C>, private val empty: C) :
-    GridLine<C> {
+private data class OpenGridLine<C>(
+    private val grid: Grid<C>, override val index: Int, private val cells: Map<Int, C>, private val empty: C
+) : GridLine<C> {
     override val isEmpty: Boolean get() = cells.all { it == empty }
     override fun cell(idx: Int): C = cells[idx] ?: empty
-    override fun findAll(predicate: (C) -> Boolean): Map<Int, C> = cells.filterValues(predicate)
+    override fun findAll(predicate: Grid<C>.(C) -> Boolean): Map<Int, C> = cells.filterValues { grid.predicate(it) }
 }

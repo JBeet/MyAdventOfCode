@@ -16,7 +16,7 @@ class CharGrid(private val text: String, private val empty: Char = '.') : Abstra
         private val rowStart = index * lineWidth
         override val isEmpty: Boolean get() = bounds.columnRange.all { cell(it) == empty }
         override fun cell(idx: Int): Char = if (idx in bounds.columnRange) text[rowStart + idx] else empty
-        override fun findAll(predicate: (Char) -> Boolean): Map<Int, Char> = buildMap {
+        override fun findAll(predicate: Grid<Char>.(Char) -> Boolean): Map<Int, Char> = buildMap {
             bounds.columnRange.forEach { c ->
                 val cell = cell(c)
                 if (predicate(cell)) set(c, cell)
@@ -28,7 +28,7 @@ class CharGrid(private val text: String, private val empty: Char = '.') : Abstra
     inner class CharCol(override val index: Int) : GridLine<Char> {
         override val isEmpty: Boolean get() = bounds.rowRange.all { cell(it) == empty }
         override fun cell(idx: Int): Char = if (idx in bounds.rowRange) text[indexFromPosition(idx, index)] else empty
-        override fun findAll(predicate: (Char) -> Boolean): Map<Int, Char> = buildMap {
+        override fun findAll(predicate: Grid<Char>.(Char) -> Boolean): Map<Int, Char> = buildMap {
             bounds.rowRange.forEach { r ->
                 val cell = cell(r)
                 if (predicate(cell)) set(r, cell)
@@ -38,7 +38,7 @@ class CharGrid(private val text: String, private val empty: Char = '.') : Abstra
 
     private fun indexFromPosition(r: Int, c: Int) = r * lineWidth + c
 
-    override fun forEachNonEmpty(action: (Position) -> Unit) {
+    override fun forEachNonEmpty(action: Grid<Char>.(Position) -> Unit) {
         text.forEachIndexed { index, c ->
             if (indexInGrid(index) && c != empty)
                 action(positionFromIndex(index))
@@ -59,7 +59,7 @@ class CharGrid(private val text: String, private val empty: Char = '.') : Abstra
         return Position(r, c)
     }
 
-    override fun countNonEmpty(predicate: (Position) -> Boolean): Int =
+    override fun countNonEmpty(predicate: Grid<Char>.(Position) -> Boolean): Int =
         text.indices.count { idx ->
             if (indexInGrid(idx)) {
                 val ch = text[idx]
@@ -85,7 +85,7 @@ class CharGrid(private val text: String, private val empty: Char = '.') : Abstra
         }
     }
 
-    override fun findAll(predicate: (Char) -> Boolean): Map<Position, Char> = buildMap {
+    override fun findAll(predicate: Grid<Char>.(Char) -> Boolean): Map<Position, Char> = buildMap {
         text.forEachIndexed { index, c ->
             if (indexInGrid(index) && predicate(c))
                 put(positionFromIndex(index), c)
@@ -95,6 +95,12 @@ class CharGrid(private val text: String, private val empty: Char = '.') : Abstra
     fun with(position: Position, value: Char): CharGrid {
         val newText = StringBuilder(text)
         newText[indexFromPosition(position.row, position.column)] = value
+        return CharGrid(newText.toString(), empty)
+    }
+
+    fun clearCells(positions: List<Position>): CharGrid {
+        val newText = StringBuilder(text)
+        positions.forEach { pos -> newText[indexFromPosition(pos.row, pos.column)] = empty }
         return CharGrid(newText.toString(), empty)
     }
 
