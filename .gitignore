@@ -1,7 +1,7 @@
 .idea
 .kotlin/
 build
-src/**/*.txt
+src/**/Day??.txt
 local.properties
 .gradle
 gradle
