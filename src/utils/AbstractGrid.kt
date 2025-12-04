@@ -1,6 +1,6 @@
 package utils
 
-abstract class AbstractGrid<C>(protected open val bounds: Bounds) : Grid<C> {
+abstract class AbstractGrid<C>(override val bounds: Bounds) : BoundedGrid<C> {
     fun connections(pos: Position) = connections(pos, cell(pos))
     open fun connections(pos: Position, cell: C): Iterable<Position> = deltas(pos, cell).map { pos + it.delta }
     open fun deltas(pos: Position, cell: C): Collection<Delta> =

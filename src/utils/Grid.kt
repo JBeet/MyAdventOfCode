@@ -16,6 +16,10 @@ interface Grid<C> {
     operator fun contains(pos: Position): Boolean
 }
 
+interface BoundedGrid<C> : Grid<C> {
+    val bounds: Bounds
+}
+
 interface GridCell {
     val directions: Set<Delta> get() = emptySet()
 }

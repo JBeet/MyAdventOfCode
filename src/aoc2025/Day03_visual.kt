@@ -29,30 +29,30 @@ data class Bank(val digits: List<Int>) {
     val size: Int = digits.size
 }
 
-data class Puzzle(val banks: List<Bank>) {
+data class Puzzle03(val banks: List<Bank>) {
     constructor(s: String) : this(s.lines().map { Bank(it) })
 
     val inputWidth: Int = banks.maxOf { it.size }
-    fun part1(): PuzzleSolver = PuzzleSolver.Sum(banks.map { BankSolver.Initial(it, 2) })
-    fun part2(): PuzzleSolver = PuzzleSolver.Sum(banks.map { BankSolver.Initial(it, 12) })
-    fun withLength(i: Int): PuzzleSolver = PuzzleSolver.Sum(banks.map { BankSolver.Initial(it, 5) })
+    fun part1(): Puzzle03Solver = Puzzle03Solver.Sum(banks.map { BankSolver.Initial(it, 2) })
+    fun part2(): Puzzle03Solver = Puzzle03Solver.Sum(banks.map { BankSolver.Initial(it, 12) })
+    fun withLength(i: Int): Puzzle03Solver = Puzzle03Solver.Sum(banks.map { BankSolver.Initial(it, 5) })
 }
 
-sealed interface PuzzleSolver {
+sealed interface Puzzle03Solver {
     val outputSize: Int
     val activeBank: Bank?
     val isFinished: Boolean
     val activeItems: List<WhiteboardRow>
-    suspend fun next(): PuzzleSolver
+    suspend fun next(): Puzzle03Solver
     fun digitColor(idx: Int): Color
     val delay: Int
 
-    data object Inactive : PuzzleSolver {
+    data object Inactive : Puzzle03Solver {
         override val activeBank: Bank? = null
         override val isFinished = true
         override val outputSize: Int = 2
         override val activeItems: List<WhiteboardRow> = emptyList()
-        override suspend fun next(): PuzzleSolver = this
+        override suspend fun next(): Puzzle03Solver = this
         override fun digitColor(idx: Int): Color = Color.Transparent
         override val delay: Int = 0
     }
@@ -62,14 +62,14 @@ sealed interface PuzzleSolver {
         val active: BankSolver,
         val total: Long,
         val completed: List<WhiteboardRow.BankCompleted>
-    ) : PuzzleSolver {
+    ) : Puzzle03Solver {
         constructor(parts: List<BankSolver>) : this(parts.drop(1), parts[0], 0, emptyList())
 
         override val activeBank: Bank = active.bank
         override val isFinished: Boolean = false
         override val outputSize: Int = active.outputSize
         override val activeItems: List<WhiteboardRow> get() = completed + WhiteboardRow.RunningTotal(total) + active.items
-        override suspend fun next(): PuzzleSolver {
+        override suspend fun next(): Puzzle03Solver {
             if (active !is BankSolver.Completed)
                 return Sum(parts, active.next(), total, completed)
             val newTotal = total + active.value
@@ -85,11 +85,11 @@ sealed interface PuzzleSolver {
 
     data class Completed(
         override val outputSize: Int, val total: Long, val completed: List<WhiteboardRow.BankCompleted>
-    ) : PuzzleSolver {
+    ) : Puzzle03Solver {
         override val activeBank: Bank? = null
         override val isFinished: Boolean = true
         override val activeItems: List<WhiteboardRow> = completed + listOf(WhiteboardRow.Completed(total))
-        override suspend fun next(): PuzzleSolver = this
+        override suspend fun next(): Puzzle03Solver = this
         override fun digitColor(idx: Int): Color = Color.Transparent
         override val delay: Int = 0
     }
@@ -242,11 +242,11 @@ sealed interface BankSolver {
     }
 }
 
-fun main() = mainGUI()
+fun main() = mainGUI03()
 
 private fun mainCL() {
     runBlocking {
-        val puzzle = Puzzle(read2025("Day03_test"))
+        val puzzle = Puzzle03(read2025("Day03_test"))
         var solver = puzzle.part2()
         while (!solver.isFinished) {
             solver = solver.next()
@@ -255,11 +255,11 @@ private fun mainCL() {
     }
 }
 
-fun mainGUI() = application {
+fun mainGUI03() = application {
     Window(::exitApplication, title = "Advent of Code - Day 3", alwaysOnTop = true) {
         val scope = rememberCoroutineScope()
-        val puzzle = Puzzle(read2025("Day03_test"))
-        var solver: PuzzleSolver by remember { mutableStateOf(PuzzleSolver.Inactive) }
+        val puzzle = Puzzle03(read2025("Day03_test"))
+        var solver: Puzzle03Solver by remember { mutableStateOf(Puzzle03Solver.Inactive) }
         Column {
             Row(modifier = Modifier.fillMaxWidth().padding(16.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 Button(onClick = {
