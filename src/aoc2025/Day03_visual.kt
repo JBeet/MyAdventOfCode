@@ -35,6 +35,7 @@ data class Puzzle(val banks: List<Bank>) {
     val inputWidth: Int = banks.maxOf { it.size }
     fun part1(): PuzzleSolver = PuzzleSolver.Sum(banks.map { BankSolver.Initial(it, 2) })
     fun part2(): PuzzleSolver = PuzzleSolver.Sum(banks.map { BankSolver.Initial(it, 12) })
+    fun withLength(i: Int): PuzzleSolver = PuzzleSolver.Sum(banks.map { BankSolver.Initial(it, 5) })
 }
 
 sealed interface PuzzleSolver {
@@ -193,7 +194,7 @@ sealed interface BankSolver {
             return Color(v, 0f, v, 0.5f)
         }
 
-        override val delay: Int = 1
+        override val delay: Int = if (items != nextItems()) 5 else 1
     }
 
     data class GrowMoreAfter(
@@ -225,17 +226,16 @@ sealed interface BankSolver {
             return Color(v, 0f, v, 0.5f)
         }
 
-        override val delay: Int = 1
+        override val delay: Int = if (items.any { it.indices.last() == index }) 5 else 1
     }
 
     data class Completed(
         override val bank: Bank,
         override val outputSize: Int,
         val solution: WhiteboardRow.BankCompleted
-    ) :
-        BankSolver {
+    ) : BankSolver {
         val value: Long get() = solution.value
-        override val items: List<WhiteboardRow> = listOf(WhiteboardRow.RunningTotal(value))
+        override val items: List<WhiteboardRow> = listOf(solution)
         override suspend fun next(): BankSolver = this
         override fun color(idx: Int): Color = Color.Transparent
         override val delay: Int = 5
@@ -283,6 +283,17 @@ fun mainGUI() = application {
                     }
                 }) {
                     Text("Part 2")
+                }
+                Button(onClick = {
+                    scope.launch {
+                        solver = puzzle.withLength(5)
+                        while (!solver.isFinished) {
+                            solver = solver.next()
+                            delay(solver.delay * 100.milliseconds)
+                        }
+                    }
+                }) {
+                    Text("Length 5")
                 }
             }
             Row(modifier = Modifier.fillMaxWidth().padding(16.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
