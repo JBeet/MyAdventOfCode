@@ -11,30 +11,8 @@ import kotlin.io.path.readText
 fun read2024(name: String) = Path("src/aoc2024/$name.txt").readText().trim()
 fun read2025(name: String) = Path("src/aoc2025/$name.txt").readText().trim()
 
-fun <K, V> cached(block1: Cache1<K, V>.(K) -> V) = Cache1(block1)
-fun <K1, K2, V> cached2(block2: Cache2<K1, K2, V>.(K1, K2) -> V) = Cache2(block2)
-fun <K1, K2, K3, V> cached3(block3: Cache3<K1, K2, K3, V>.(K1, K2, K3) -> V) = Cache3(block3)
-
-abstract class Cache<K, V>(val items: MutableMap<K, V> = mutableMapOf()) {
-    operator fun get(key: K): V = items.getOrPut(key) { calculate(key) }
-    abstract fun calculate(key: K): V
-}
-
-class Cache1<K, V>(private val calculate1: Cache1<K, V>.(K) -> V) : Cache<K, V>() {
-    operator fun invoke(key: K): V = get(key)
-    override fun calculate(key: K): V = calculate1(key)
-}
-
-class Cache2<K1, K2, V>(private val calculate2: Cache2<K1, K2, V>.(K1, K2) -> V) : Cache<Pair<K1, K2>, V>() {
-    operator fun invoke(key1: K1, key2: K2): V = get(key1 to key2)
-    override fun calculate(key: Pair<K1, K2>): V = calculate2(key.first, key.second)
-}
-
-class Cache3<K1, K2, K3, V>(private val calculate3: Cache3<K1, K2, K3, V>.(K1, K2, K3) -> V) :
-    Cache<Triple<K1, K2, K3>, V>() {
-    operator fun invoke(key1: K1, key2: K2, key3: K3): V = get(Triple(key1, key2, key3))
-    override fun calculate(key: Triple<K1, K2, K3>): V = calculate3(key.first, key.second, key.third)
-}
+fun <T> List<T>.peek() = also { println(it) }
+fun <T> Sequence<T>.peek() = onEach { println(it) }
 
 /**
  * Converts string to md5 hash.
@@ -58,12 +36,25 @@ fun String.intLists(): List<List<Int>> = nonEmptyLines().map { it.ints() }
 fun String.longLists() = nonEmptyLines().map { it.longs() }
 
 @JvmName("transposeStrings")
-fun List<String>.transpose(): List<String> = this[0].indices.map { this.column(it) }
-fun List<String>.column(c: Int): String = buildString { this@column.forEach { s -> append(s[c]) } }
+fun List<String>.transpose(): List<String> = (0..<maxOf { it.length }).map { this.column(it) }
+fun List<String>.column(c: Int): String =
+    buildString { this@column.forEach { s -> append(if (c < s.length) s[c] else ' ') } }
 
 @JvmName("transposeLists")
 fun <T> List<List<T>>.transpose(): List<List<T>> = this[0].indices.map { this.column(it) }
 fun <T> List<List<T>>.column(c: Int): List<T> = map { it[c] }
+
+fun <T> List<T>.splitBy(splitter: (T) -> Boolean): Sequence<List<T>> = sequence {
+    val cur = mutableListOf<T>()
+    forEach { item ->
+        if (splitter(item)) {
+            yield(cur.toList())
+            cur.clear()
+        } else
+            cur.add(item)
+    }
+    if (cur.isNotEmpty()) yield(cur)
+}
 
 fun <E> List<E>.sublistBefore(item: E, missingDelimiterValue: List<E> = this): List<E> {
     val pos = indexOf(item)
@@ -180,16 +171,4 @@ fun verify(expected: Long, actual: Long) {
 
 fun verify(expected: String, actual: String) {
     check(actual == expected) { "Expected $expected but was $actual" }
-}
-
-enum class AnsiColor(private val fg: Int, private val bg: Int) {
-    BLACK(30, 40), RED(31, 41), GREEN(32, 42), YELLOW(33, 43), BLUE(34, 44),
-    MAGENTA(35, 45), CYAN(36, 46), WHITE(37, 47),
-    BRIGHT_BLACK(90, 100), BRIGHT_RED(91, 101), BRIGHT_GREEN(92, 102), BRIGHT_YELLOW(93, 103), BRIGHT_BLUE(94, 104),
-    BRIGHT_MAGENTA(95, 105), BRIGHT_CYAN(96, 106), BRIGHT_WHITE(97, 107),
-
-    DEFAULT(39, 49), RESET(0, 0);
-
-    fun fgCode(): String = "\u001b[${fg}m"
-    fun bgCode(): String = "\u001b[${bg}m"
 }
