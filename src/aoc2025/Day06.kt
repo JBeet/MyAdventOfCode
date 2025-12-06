@@ -24,7 +24,7 @@ class Day06 {
             override fun calculate(numbers: List<Long>) = numbers.sum()
         },
         TIMES {
-            override fun calculate(numbers: List<Long>) = numbers.fold(1L) { acc, it -> acc * it }
+            override fun calculate(numbers: List<Long>) = numbers.reduce(Long::times)
         };
 
         abstract fun calculate(numbers: List<Long>): Long
