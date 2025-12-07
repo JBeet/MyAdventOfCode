@@ -10,6 +10,7 @@ class CharGrid(private val text: String, private val empty: Char = '.') : Abstra
     override fun cell(r: Int, c: Int): Char =
         if (r in bounds.rowRange && c in bounds.columnRange) text[indexFromPosition(r, c)] else empty
 
+    val rows get() = (0..<height).map { row(it) }
     val columns get() = (0..<width).map { column(it) }
     override fun row(r: Int): GridLine<Char> = if (r in bounds.rowRange) CharRow(r) else EmptyLine(r, empty)
     inner class CharRow(override val index: Int) : GridLine<Char> {
