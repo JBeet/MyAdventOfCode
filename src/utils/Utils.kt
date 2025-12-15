@@ -23,7 +23,7 @@ fun String.md5() = BigInteger(1, MessageDigest.getInstance("MD5").digest(toByteA
 
 fun String.nonEmptyLines(): List<String> = lines().filter { it.isNotBlank() }
 fun String.findWithRegex(pattern: String) = Regex(pattern).findAll(this).map { it.value }
-fun String.ints() = signedInts().also { list -> check(list.all { it > 0 }) }
+fun String.ints() = signedInts().also { list -> check(list.all { it > 0 }) { "Expected positive ints, but got $list" } }
 fun String.intsOrZero() = signedInts().also { list -> check(list.all { it >= 0 }) }
 fun String.signedInts(): List<Int> = bigIntegers().mapTo(mutableListOf()) { it.intValueExact() }
 fun String.longs() = signedLongs().also { longs -> check(longs.all { it > 0 }) }
